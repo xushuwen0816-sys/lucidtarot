@@ -187,6 +187,14 @@ const App: React.FC = () => {
                          <div className="flex items-center gap-2">
                             <Key className="w-3 h-3" /> API 密钥
                          </div>
+                         <a 
+                            href={provider === 'gemini' ? "https://aistudio.google.com/app/apikey" : "https://cloud.siliconflow.cn/account/ak"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-stone-500 hover:text-white transition-colors flex items-center gap-1 border-b border-transparent hover:border-white/50"
+                         >
+                            申请 {provider === 'gemini' ? 'Gemini' : 'SiliconFlow'} Key
+                         </a>
                      </label>
                      <input 
                         type="password"
