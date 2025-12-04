@@ -19,7 +19,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ sessions }) => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <SectionTitle title="解读历史" subtitle="HISTORY · 灵魂足迹" />
+      <SectionTitle title="解读历史" subtitle="灵魂足迹" />
       
       <div className="px-4 mb-4">
           <div className="relative">

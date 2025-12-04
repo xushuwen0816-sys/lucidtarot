@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import { generateTarotReading, generateDailyPractice, analyzeJournalEntry } from '../services/geminiService';
 import { TarotReading, DailyPractice, JournalEntry, Wish } from '../types';
@@ -39,7 +38,7 @@ const generateTarotDeck = () => {
 const RitualView: React.FC<RitualViewProps> = ({ wishes, onAddJournalEntry, onSaveRitual }) => {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
-            <SectionTitle title="每日仪式" subtitle="RITUAL" />
+            <SectionTitle title="每日仪式" subtitle="每日仪式" />
             <Card className="p-8 text-center text-stone-400">
                 <Sparkles className="w-10 h-10 mx-auto mb-4 text-lucid-glow" />
                 <p>仪式功能正在开发中...</p>

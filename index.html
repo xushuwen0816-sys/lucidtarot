@@ -3,7 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PWA / Mobile Viewport Settings -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#1C1917" />
+    
+    <!-- iOS Specific Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LUCID" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
     <title>LUCID TAROT ｜ 澄</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,8 +79,11 @@
         background: linear-gradient(180deg, #191716 0%, #292420 50%, #1F1C1A 100%);
         color: #FFF7ED;
         font-family: 'Noto Serif SC', serif;
-        min-height: 100vh;
+        /* Use dynamic viewport height for better mobile support */
+        min-height: 100dvh;
         overflow-x: hidden;
+        /* Disable text selection highlights for app-like feel */
+        -webkit-tap-highlight-color: transparent;
       }
       ::-webkit-scrollbar {
         width: 6px;

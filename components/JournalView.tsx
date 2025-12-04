@@ -90,14 +90,14 @@ const JournalView: React.FC<JournalViewProps> = ({ onAddJournalEntry }) => {
 
   return (
     <div className="w-full h-full flex flex-col">
-        <SectionTitle title="觉察日记" subtitle="JOURNAL · 内在对话" />
+        <SectionTitle title="觉察日记" subtitle="内在对话" />
 
         <div className="flex-1 overflow-y-auto px-4 pb-20 custom-scrollbar animate-fade-in">
             <div className="max-w-4xl mx-auto space-y-6 pt-6">
                 <Card className="border-white/10 bg-gradient-to-b from-stone-800/20 to-transparent !p-0 overflow-hidden">
                     <div className="flex items-center gap-2 p-4 md:p-6 border-b border-white/5 bg-white/[0.02] text-lucid-dim">
                         <BookOpen className="w-4 h-4" />
-                        <span className="text-xs font-serif tracking-widest">今日觉察 Writing Space</span>
+                        <span className="text-xs font-serif tracking-widest">今日觉察</span>
                     </div>
                     <textarea
                         className="w-full bg-black/20 p-6 md:p-8 text-lg font-serif focus:outline-none min-h-[40vh] text-stone-200 placeholder-stone-700/50 resize-none transition-all leading-loose tracking-wide"
@@ -119,7 +119,7 @@ const JournalView: React.FC<JournalViewProps> = ({ onAddJournalEntry }) => {
                             {/* 1. Emotional State (Yellow) */}
                             <div className="bg-white/5 rounded-2xl p-5 border border-white/5 hover:bg-white/10 transition-colors h-full">
                                 <span className="text-xs uppercase text-stone-500 tracking-wider mb-3 font-bold flex items-center gap-2">
-                                    <Smile className="w-3 h-3" /> 情绪状态 Emotion
+                                    <Smile className="w-3 h-3" /> 情绪状态
                                 </span>
                                 <div className="flex flex-wrap gap-2">
                                     {Array.isArray(journalAnalysis.emotionalState) ? (
@@ -139,7 +139,7 @@ const JournalView: React.FC<JournalViewProps> = ({ onAddJournalEntry }) => {
                             {/* 2. Identified Blocks (Red) */}
                             <div className="bg-white/5 rounded-2xl p-5 border border-white/5 hover:bg-white/10 transition-colors h-full">
                                 <span className="text-xs uppercase text-stone-500 tracking-wider mb-3 font-bold flex items-center gap-2">
-                                    <AlertCircle className="w-3 h-3" /> 识别信念 Beliefs
+                                    <AlertCircle className="w-3 h-3" /> 识别信念
                                 </span>
                                 <div className="flex flex-wrap gap-2">
                                     {journalAnalysis.blocksIdentified?.map((b, i) => (
@@ -153,7 +153,7 @@ const JournalView: React.FC<JournalViewProps> = ({ onAddJournalEntry }) => {
                             {/* 3. High Self Traits (Indigo) */}
                             <div className="bg-white/5 rounded-2xl p-5 border border-white/5 hover:bg-white/10 transition-colors h-full">
                                  <span className="text-xs uppercase text-stone-500 tracking-wider mb-3 font-bold flex items-center gap-2">
-                                     <Sparkles className="w-3 h-3" /> 高我特质 Traits
+                                     <Sparkles className="w-3 h-3" /> 高我特质
                                  </span>
                                  <div className="flex flex-wrap gap-2">
                                     {journalAnalysis.highSelfTraits && journalAnalysis.highSelfTraits.length > 0 ? (
@@ -175,7 +175,7 @@ const JournalView: React.FC<JournalViewProps> = ({ onAddJournalEntry }) => {
                                 <Sparkles className="w-16 h-16" />
                             </div>
                             <h4 className="text-sm font-serif text-lucid-glow mb-4 flex items-center gap-2 uppercase tracking-widest border-b border-lucid-glow/10 pb-2 inline-block">
-                                <Sparkles className="w-4 h-4" /> LUCID 洞见 Insight
+                                <Sparkles className="w-4 h-4" /> LUCID 洞见
                             </h4>
                             <div className="text-stone-300 font-serif text-base leading-loose whitespace-pre-wrap">
                                 <SimpleMarkdown content={safeRender(journalAnalysis.summary)} />
@@ -185,7 +185,7 @@ const JournalView: React.FC<JournalViewProps> = ({ onAddJournalEntry }) => {
                         {/* Advice */}
                         <Card className="bg-emerald-900/10 border-emerald-500/10 p-6">
                             <h4 className="text-sm font-serif text-emerald-300 mb-4 uppercase tracking-widest border-b border-emerald-500/10 pb-2 inline-block">
-                                明日建议 Guidance
+                                明日建议
                             </h4>
                             <div className="text-stone-300 font-serif text-base leading-loose whitespace-pre-wrap">
                                 <SimpleMarkdown content={safeRender(journalAnalysis.tomorrowsAdvice)} />

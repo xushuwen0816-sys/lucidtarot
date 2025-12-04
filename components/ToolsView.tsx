@@ -27,7 +27,7 @@ const ToolsView: React.FC<ToolsViewProps> = ({ wish, wishes = [], onUpdateWish }
 
   return (
     <div className="w-full h-full flex flex-col relative">
-        <SectionTitle title="能量语库" subtitle="AFFIRMATIONS · 肯定语" />
+        <SectionTitle title="能量语库" subtitle="肯定语" />
 
         <div className="flex-1 overflow-y-auto px-4 pb-32 custom-scrollbar animate-fade-in">
              <div className="max-w-2xl mx-auto space-y-6 pt-4">
@@ -35,7 +35,7 @@ const ToolsView: React.FC<ToolsViewProps> = ({ wish, wishes = [], onUpdateWish }
                      <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4">
                          <div className="flex items-center gap-2">
                             <Type className="w-4 h-4 text-lucid-glow" />
-                            <h3 className="text-white font-serif text-base">肯定语库 Library</h3>
+                            <h3 className="text-white font-serif text-base">肯定语库</h3>
                          </div>
                          
                          {/* View Mode Toggle */}
@@ -87,7 +87,7 @@ const ToolsView: React.FC<ToolsViewProps> = ({ wish, wishes = [], onUpdateWish }
                                                 <span className={`text-[9px] uppercase tracking-widest block mb-1.5 font-sans ${
                                                     aff.type === 'conscious' ? 'text-orange-300/80' : aff.type === 'subconscious' ? 'text-rose-300/80' : 'text-emerald-300/80'
                                                 }`}>
-                                                    {aff.type === 'conscious' ? '显意识 Conscious' : aff.type === 'subconscious' ? '潜意识 Subconscious' : '未来 Future Self'}
+                                                    {aff.type === 'conscious' ? '显意识' : aff.type === 'subconscious' ? '潜意识' : '未来'}
                                                 </span>
                                                 <p className="text-stone-200 font-serif leading-relaxed text-sm">"{aff.text}"</p>
                                             </div>

@@ -132,13 +132,13 @@ const App: React.FC = () => {
   // AUTH SCREEN
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen text-lucid-text font-serif bg-lucid-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="h-[100dvh] text-lucid-text font-serif bg-lucid-bg flex flex-col items-center justify-center p-6 relative overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
          <div className="absolute inset-0 pointer-events-none">
              <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-[#3F2E26] rounded-full blur-[150px] opacity-30 animate-pulse-slow"></div>
              <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-[#4C3A35] rounded-full blur-[120px] opacity-20"></div>
          </div>
 
-         <div className="z-10 w-full max-w-md space-y-8 text-center animate-fade-in">
+         <div className="z-10 w-full max-w-md space-y-8 text-center animate-fade-in my-auto">
              <div className="flex flex-col items-center gap-4">
                  <div className="w-16 h-16 rounded-full bg-lucid-glow/10 flex items-center justify-center shadow-[0_0_30px_rgba(253,186,116,0.15)] border border-lucid-glow/20">
                     <Sparkles className="w-8 h-8 text-lucid-glow" />
@@ -151,7 +151,7 @@ const App: React.FC = () => {
                  
                  <div className="space-y-2">
                      <label className="text-xs text-lucid-glow uppercase tracking-wider font-bold flex items-center gap-2">
-                         <User className="w-3 h-3" /> 您的名字 Your Name
+                         <User className="w-3 h-3" /> 您的名字
                      </label>
                      <input 
                         type="text"
@@ -164,7 +164,7 @@ const App: React.FC = () => {
                  
                  <div className="space-y-3 pt-2 border-t border-white/5">
                      <label className="text-xs text-lucid-glow uppercase tracking-wider font-bold flex items-center gap-2">
-                         <Server className="w-3 h-3" /> 模型服务商 Provider
+                         <Server className="w-3 h-3" /> 模型服务商
                      </label>
                      <div className="grid grid-cols-2 gap-2 bg-black/20 p-1 rounded-xl">
                          <button
@@ -235,18 +235,21 @@ const App: React.FC = () => {
 
   // MAIN APP
   return (
-    <div className="min-h-screen text-lucid-text font-serif selection:bg-lucid-glow/30 selection:text-white overflow-hidden relative bg-lucid-bg">
+    // Use h-[100dvh] for mobile standalone support to avoid scrolling issues
+    <div className="h-[100dvh] text-lucid-text font-serif selection:bg-lucid-glow/30 selection:text-white overflow-hidden relative bg-lucid-bg flex flex-col">
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
          <div className="absolute top-[-10%] left-[-10%] w-[80%] h-[80%] bg-[#3F2E26] rounded-full blur-[120px] opacity-40 animate-pulse-slow"></div>
          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#4C3A35] rounded-full blur-[100px] opacity-30 animate-float" style={{ animationDuration: '25s' }}></div>
       </div>
 
-      <main className="relative z-10 h-screen flex flex-col md:flex-row">
+      <main className="relative z-10 w-full h-full flex flex-col md:flex-row">
         
-        {/* Navigation */}
-        <nav className="order-2 md:order-1 w-full md:w-24 flex md:flex-col items-center md:items-center justify-between md:justify-start py-4 md:py-8 z-50 transition-all duration-300 md:border-r border-white/5 bg-white/[0.01] backdrop-blur-md flex-shrink-0">
+        {/* Navigation - Order 2 on mobile means it's at the BOTTOM.
+            Added pb-[env(safe-area-inset-bottom)] to respect Home Indicator on iOS.
+        */}
+        <nav className="order-2 md:order-1 w-full md:w-24 flex md:flex-col items-center md:items-center justify-between md:justify-start pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:py-8 z-50 transition-all duration-300 md:border-r border-white/5 bg-white/[0.01] backdrop-blur-md flex-shrink-0">
            <div 
-             className="flex flex-col items-center mb-10 opacity-90 hover:opacity-100 transition-opacity cursor-pointer md:mt-4 ml-6 md:ml-0"
+             className="flex flex-col items-center mb-0 md:mb-10 opacity-90 hover:opacity-100 transition-opacity cursor-pointer md:mt-4 ml-6 md:ml-0"
              onClick={() => setIsAuthorized(false)}
              title="返回设置"
            >
@@ -274,8 +277,10 @@ const App: React.FC = () => {
            </div>
         </nav>
 
-        {/* Content */}
-        <div className="order-1 md:order-2 flex-1 relative overflow-hidden flex flex-col">
+        {/* Content - Order 1 on mobile means it's at the TOP.
+            Added pt-[env(safe-area-inset-top)] to respect Notch on iOS.
+        */}
+        <div className="order-1 md:order-2 flex-1 relative overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] md:pt-0">
            <div className="flex-1 w-full h-full p-0 md:p-6 max-w-6xl mx-auto flex flex-col">
               
               {currentView === AppView.DAILY && (

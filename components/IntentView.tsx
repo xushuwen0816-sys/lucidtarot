@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Send, Sparkles, Check, ArrowRight, RotateCcw, Share2, MessageSquare, ThumbsUp, HelpCircle, Heart, Loader2, X, Shuffle, LayoutGrid, Flame, Droplets, Wind, Mountain } from 'lucide-react';
+import { Send, Sparkles, Check, ArrowRight, RotateCcw, Share2, MessageSquare, ThumbsUp, HelpCircle, Heart, Loader2, X, Shuffle, LayoutGrid, Flame, Droplets, Wind, Mountain, ChevronDown, ChevronUp } from 'lucide-react';
 import { Spread, TarotReadingSession, TarotCard, ChatMessage, FeedbackType } from '../types';
 import { recommendSpread, generateFullReading, chatWithTarot } from '../services/geminiService';
 import { Button, Card, SectionTitle, LoadingSpinner, SimpleMarkdown, Modal, TarotCardImage } from './Shared';
@@ -8,229 +8,255 @@ import { generateTarotDeck } from './EnergyCheckView';
 
 const SPREADS: Spread[] = [
     {
-        id: 'one_card',
-        name: '单张牌 (The Oracle)',
-        description: '简单的“是/否”问题，或快速获取当下核心指引。',
-        cardCount: 1,
+        id: 'inspiration_correspondence',
+        name: '灵感对应',
+        description: '连接表象与隐喻，寻找现实问题的灵性对应解法。',
+        cardCount: 4,
         positions: [
-            { id: 1, name: 'Core', description: '核心指引', x: 50, y: 50 }
+            { id: 1, name: '表象', description: '现实中遇到的问题', x: 50, y: 80 },
+            { id: 2, name: '隐喻', description: '潜意识的象征根源', x: 50, y: 20 },
+            { id: 3, name: '连接', description: '整合转化的关键', x: 20, y: 50 },
+            { id: 4, name: '启示', description: '灵性指引方向', x: 80, y: 50 }
+        ]
+    },
+    {
+        id: 'dream_decoder',
+        name: '梦境解析',
+        description: '解读梦境符号，链接潜意识讯息与清醒生活。',
+        cardCount: 3,
+        positions: [
+            { id: 1, name: '梦境', description: '梦境的核心画面', x: 50, y: 20 },
+            { id: 2, name: '讯息', description: '潜意识想要传达的', x: 25, y: 60 },
+            { id: 3, name: '关联', description: '与现实生活的关联', x: 75, y: 60 }
+        ]
+    },
+    {
+        id: 'inner_compass',
+        name: '内心指南针',
+        description: '当感到迷茫时，重新校准内心的方向。',
+        cardCount: 4,
+        positions: [
+            { id: 1, name: '北方', description: '理智与逻辑', x: 50, y: 20 },
+            { id: 2, name: '南方', description: '激情与动力', x: 50, y: 80 },
+            { id: 3, name: '东方', description: '新的启示', x: 80, y: 50 },
+            { id: 4, name: '西方', description: '情感流动', x: 20, y: 50 }
         ]
     },
     {
         id: 'three_card_freestyle',
-        name: '三张牌·自由解读 (Freestyle)',
+        name: '三张牌·自由解读',
         description: '无特定位置定义，依靠直觉读取三张牌的流动能量。',
         cardCount: 3,
         positions: [
-            { id: 1, name: 'Card 1', description: '第一张牌', x: 20, y: 50 },
-            { id: 2, name: 'Card 2', description: '第二张牌', x: 50, y: 50 },
-            { id: 3, name: 'Card 3', description: '第三张牌', x: 80, y: 50 }
+            { id: 1, name: '牌一', description: '第一张牌', x: 20, y: 50 },
+            { id: 2, name: '牌二', description: '第二张牌', x: 50, y: 50 },
+            { id: 3, name: '牌三', description: '第三张牌', x: 80, y: 50 }
         ]
     },
     {
         id: 'three_card_time',
-        name: '时间之流 (Time Flow)',
+        name: '时间之流',
         description: '经典圣三角，解读过去、现在、未来的线性因果。',
         cardCount: 3,
         positions: [
-            { id: 1, name: 'Past', description: '过去的影响', x: 20, y: 50 },
-            { id: 2, name: 'Present', description: '当下的状态', x: 50, y: 50 },
-            { id: 3, name: 'Future', description: '未来的趋势', x: 80, y: 50 }
+            { id: 1, name: '过去', description: '过去的影响', x: 20, y: 50 },
+            { id: 2, name: '现在', description: '当下的状态', x: 50, y: 50 },
+            { id: 3, name: '未来', description: '未来的趋势', x: 80, y: 50 }
         ]
     },
     {
         id: 'four_elements',
-        name: '四要素 (Four Elements)',
+        name: '四要素',
         description: '从火(行动)、水(情感)、风(思维)、土(物质)四个维度分析现状。',
         cardCount: 4,
         positions: [
-            { id: 1, name: 'Fire', description: '火：行动与热情', x: 50, y: 20 },
-            { id: 2, name: 'Water', description: '水：情感与直觉', x: 80, y: 50 },
-            { id: 3, name: 'Air', description: '风：思维与沟通', x: 20, y: 50 },
-            { id: 4, name: 'Earth', description: '土：物质与现实', x: 50, y: 80 }
+            { id: 1, name: '火', description: '火：行动与热情', x: 50, y: 20 },
+            { id: 2, name: '水', description: '水：情感与直觉', x: 80, y: 50 },
+            { id: 3, name: '风', description: '风：思维与沟通', x: 20, y: 50 },
+            { id: 4, name: '土', description: '土：物质与现实', x: 50, y: 80 }
         ]
     },
     {
         id: 'love_tree',
-        name: '爱情之树 (Love Tree)',
+        name: '爱情之树',
         description: '深入分析关系现状、双方心境及未来走向。',
         cardCount: 5,
         positions: [
-            { id: 1, name: 'You', description: '你的状态', x: 20, y: 60 },
-            { id: 2, name: 'Them', description: '对方的状态', x: 80, y: 60 },
-            { id: 3, name: 'Foundation', description: '关系基础', x: 50, y: 80 },
-            { id: 4, name: 'Obstacle', description: '挑战与阻碍', x: 50, y: 45 },
-            { id: 5, name: 'Outcome', description: '未来发展', x: 50, y: 20 }
+            { id: 1, name: '你', description: '你的状态', x: 20, y: 60 },
+            { id: 2, name: '对方', description: '对方的状态', x: 80, y: 60 },
+            { id: 3, name: '基础', description: '关系基础', x: 50, y: 80 },
+            { id: 4, name: '阻碍', description: '挑战与阻碍', x: 50, y: 45 },
+            { id: 5, name: '结果', description: '未来发展', x: 50, y: 20 }
         ]
     },
     {
         id: 'relationship_mirror',
-        name: '关系镜面 (The Mirror)',
+        name: '关系镜面',
         description: '相互映射，看清对方眼中的你，以及你眼中的对方。',
         cardCount: 4,
         positions: [
-            { id: 1, name: 'You view Them', description: '你看对方', x: 25, y: 70 },
-            { id: 2, name: 'Them view You', description: '对方看你', x: 75, y: 70 },
-            { id: 3, name: 'Your Needs', description: '你的真实需求', x: 25, y: 30 },
-            { id: 4, name: 'Their Needs', description: '对方的真实需求', x: 75, y: 30 }
+            { id: 1, name: '你看对方', description: '你看对方', x: 25, y: 70 },
+            { id: 2, name: '对方看你', description: '对方看你', x: 75, y: 70 },
+            { id: 3, name: '你的需求', description: '你的真实需求', x: 25, y: 30 },
+            { id: 4, name: '对方需求', description: '对方的真实需求', x: 75, y: 30 }
         ]
     },
     {
         id: 'ex_closure',
-        name: '旧爱与和解 (Closure)',
+        name: '旧爱与和解',
         description: '分析分手原因、是否还有机会、以及如何疗愈。',
         cardCount: 5,
         positions: [
-            { id: 1, name: 'Why', description: '核心原因', x: 50, y: 80 },
-            { id: 2, name: 'You', description: '你的现状', x: 20, y: 50 },
-            { id: 3, name: 'Them', description: '对方现状', x: 80, y: 50 },
-            { id: 4, name: 'Lesson', description: '学到的课题', x: 50, y: 50 },
-            { id: 5, name: 'Future', description: '未来可能性', x: 50, y: 20 }
+            { id: 1, name: '原因', description: '核心原因', x: 50, y: 80 },
+            { id: 2, name: '你', description: '你的现状', x: 20, y: 50 },
+            { id: 3, name: '对方', description: '对方现状', x: 80, y: 50 },
+            { id: 4, name: '课题', description: '学到的课题', x: 50, y: 50 },
+            { id: 5, name: '未来', description: '未来可能性', x: 50, y: 20 }
         ]
     },
     {
         id: 'choice',
-        name: '二元选择 (The Fork)',
+        name: '二元选择',
         description: '面临两个选择（A或B）时，分析各自的发展趋势。',
         cardCount: 5,
         positions: [
-            { id: 1, name: 'Root', description: '当前处境', x: 50, y: 80 },
-            { id: 2, name: 'Option A', description: '选择A的过程', x: 25, y: 50 },
-            { id: 3, name: 'Option B', description: '选择B的过程', x: 75, y: 50 },
-            { id: 4, name: 'Outcome A', description: '选择A的结果', x: 25, y: 25 },
-            { id: 5, name: 'Outcome B', description: '选择B的结果', x: 75, y: 25 }
+            { id: 1, name: '现状', description: '当前处境', x: 50, y: 80 },
+            { id: 2, name: '选择A', description: '选择A的过程', x: 25, y: 50 },
+            { id: 3, name: '选择B', description: '选择B的过程', x: 75, y: 50 },
+            { id: 4, name: '结果A', description: '选择A的结果', x: 25, y: 25 },
+            { id: 5, name: '结果B', description: '选择B的结果', x: 75, y: 25 }
         ]
     },
     {
         id: 'career_star',
-        name: '事业之星 (Career Star)',
+        name: '事业之星',
         description: '专注于职业发展、机遇与挑战的综合分析。',
         cardCount: 5,
         positions: [
-            { id: 1, name: 'Current', description: '职业现状', x: 50, y: 50 },
-            { id: 2, name: 'Ambition', description: '你的野心/目标', x: 50, y: 20 },
-            { id: 3, name: 'Challenges', description: '面临的挑战', x: 80, y: 50 },
-            { id: 4, name: 'Strengths', description: '具备的优势', x: 20, y: 50 },
-            { id: 5, name: 'Outcome', description: '长期结果', x: 50, y: 80 }
+            { id: 1, name: '现状', description: '职业现状', x: 50, y: 50 },
+            { id: 2, name: '野心', description: '你的野心/目标', x: 50, y: 20 },
+            { id: 3, name: '挑战', description: '面临的挑战', x: 80, y: 50 },
+            { id: 4, name: '优势', description: '具备的优势', x: 20, y: 50 },
+            { id: 5, name: '结果', description: '长期结果', x: 50, y: 80 }
         ]
     },
     {
         id: 'career_arrow',
-        name: '事业之箭 (Career Arrow)',
+        name: '事业之箭',
         description: '针对具体项目的执行策略与结果预测。',
         cardCount: 4,
         positions: [
-            { id: 1, name: 'Goal', description: '目标', x: 50, y: 20 },
-            { id: 2, name: 'Strategy', description: '策略', x: 50, y: 40 },
-            { id: 3, name: 'Hidden', description: '隐性因素', x: 50, y: 60 },
-            { id: 4, name: 'Outcome', description: '结果', x: 50, y: 80 }
+            { id: 1, name: '目标', description: '目标', x: 50, y: 20 },
+            { id: 2, name: '策略', description: '策略', x: 50, y: 40 },
+            { id: 3, name: '隐因', description: '隐性因素', x: 50, y: 60 },
+            { id: 4, name: '结果', description: '结果', x: 50, y: 80 }
         ]
     },
     {
         id: 'three_card_bms',
-        name: '身心灵 (Mind Body Spirit)',
+        name: '身心灵',
         description: '分析当下的身体状况、心智状态与灵性课题。',
         cardCount: 3,
         positions: [
-            { id: 1, name: 'Body', description: '身体层面', x: 50, y: 80 },
-            { id: 2, name: 'Mind', description: '心智层面', x: 25, y: 40 },
-            { id: 3, name: 'Spirit', description: '灵性层面', x: 75, y: 40 }
+            { id: 1, name: '身', description: '身体层面', x: 50, y: 80 },
+            { id: 2, name: '心', description: '心智层面', x: 25, y: 40 },
+            { id: 3, name: '灵', description: '灵性层面', x: 75, y: 40 }
         ]
     },
     {
         id: 'blind_spot',
-        name: '盲点 (Blind Spot)',
+        name: '盲点',
         description: '揭示你自己知道的、别人知道的、以及潜意识中谁都不知道的自己。',
         cardCount: 4,
         positions: [
-            { id: 1, name: 'Open Self', description: '公开的自我', x: 25, y: 25 },
-            { id: 2, name: 'Hidden Self', description: '隐藏的自我', x: 75, y: 25 },
-            { id: 3, name: 'Blind Self', description: '盲点的自我', x: 25, y: 75 },
-            { id: 4, name: 'Unknown Self', description: '未知的潜力', x: 75, y: 75 }
+            { id: 1, name: '公开自我', description: '公开的自我', x: 25, y: 25 },
+            { id: 2, name: '隐藏自我', description: '隐藏的自我', x: 75, y: 25 },
+            { id: 3, name: '盲点', description: '盲点的自我', x: 25, y: 75 },
+            { id: 4, name: '未知', description: '未知的潜力', x: 75, y: 75 }
         ]
     },
     {
         id: 'chakra_7',
-        name: '七脉轮 (7 Chakras)',
+        name: '七脉轮',
         description: '从海底轮到顶轮，全方位扫描能量系统的堵塞与流动。',
         cardCount: 7,
         positions: [
-            { id: 1, name: 'Root', description: '海底轮 (生存)', x: 50, y: 90 },
-            { id: 2, name: 'Sacral', description: '本我轮 (创造)', x: 50, y: 78 },
-            { id: 3, name: 'Solar', description: '太阳轮 (意志)', x: 50, y: 66 },
-            { id: 4, name: 'Heart', description: '心轮 (爱)', x: 50, y: 54 },
-            { id: 5, name: 'Throat', description: '喉轮 (表达)', x: 50, y: 42 },
-            { id: 6, name: 'Third Eye', description: '眉心轮 (直觉)', x: 50, y: 30 },
-            { id: 7, name: 'Crown', description: '顶轮 (灵性)', x: 50, y: 18 }
+            { id: 1, name: '海底轮', description: '海底轮 (生存)', x: 50, y: 90 },
+            { id: 2, name: '本我轮', description: '本我轮 (创造)', x: 50, y: 78 },
+            { id: 3, name: '太阳轮', description: '太阳轮 (意志)', x: 50, y: 66 },
+            { id: 4, name: '心轮', description: '心轮 (爱)', x: 50, y: 54 },
+            { id: 5, name: '喉轮', description: '喉轮 (表达)', x: 50, y: 42 },
+            { id: 6, name: '眉心轮', description: '眉心轮 (直觉)', x: 50, y: 30 },
+            { id: 7, name: '顶轮', description: '顶轮 (灵性)', x: 50, y: 18 }
         ]
     },
     {
         id: 'weekly_forecast',
-        name: '本周运势 (Weekly)',
+        name: '本周运势',
         description: '针对接下来7天的能量概览、重点事件与建议。',
         cardCount: 3,
         positions: [
-            { id: 1, name: 'Theme', description: '本周主题', x: 50, y: 20 },
-            { id: 2, name: 'Challenge', description: '主要挑战', x: 25, y: 60 },
-            { id: 3, name: 'Advice', description: '行动建议', x: 75, y: 60 }
+            { id: 1, name: '主题', description: '本周主题', x: 50, y: 20 },
+            { id: 2, name: '挑战', description: '主要挑战', x: 25, y: 60 },
+            { id: 3, name: '建议', description: '行动建议', x: 75, y: 60 }
         ]
     },
     {
         id: 'monthly_overview',
-        name: '月度指引 (Monthly)',
+        name: '月度指引',
         description: '月初使用，规划一个月的重点方向。',
         cardCount: 4,
         positions: [
-            { id: 1, name: 'Theme', description: '核心主题', x: 50, y: 20 },
-            { id: 2, name: 'Love', description: '情感运势', x: 20, y: 50 },
-            { id: 3, name: 'Career', description: '事业运势', x: 80, y: 50 },
-            { id: 4, name: 'Health', description: '健康建议', x: 50, y: 80 }
+            { id: 1, name: '主题', description: '核心主题', x: 50, y: 20 },
+            { id: 2, name: '情感', description: '情感运势', x: 20, y: 50 },
+            { id: 3, name: '事业', description: '事业运势', x: 80, y: 50 },
+            { id: 4, name: '健康', description: '健康建议', x: 50, y: 80 }
         ]
     },
     {
         id: 'birthday_return',
-        name: '生日/太阳回归 (Solar Return)',
+        name: '生日/太阳回归',
         description: '在生日当月使用，展望新一岁的成长课题。',
         cardCount: 5,
         positions: [
-            { id: 1, name: 'Past Year', description: '过去一年的总结', x: 20, y: 50 },
-            { id: 2, name: 'Theme', description: '新一岁的主题', x: 50, y: 20 },
-            { id: 3, name: 'Gift', description: '宇宙的礼物', x: 50, y: 50 },
-            { id: 4, name: 'Challenge', description: '成长的挑战', x: 50, y: 80 },
-            { id: 5, name: 'Advice', description: '核心建议', x: 80, y: 50 }
+            { id: 1, name: '往昔', description: '过去一年的总结', x: 20, y: 50 },
+            { id: 2, name: '主题', description: '新一岁的主题', x: 50, y: 20 },
+            { id: 3, name: '礼物', description: '宇宙的礼物', x: 50, y: 50 },
+            { id: 4, name: '挑战', description: '成长的挑战', x: 50, y: 80 },
+            { id: 5, name: '建议', description: '核心建议', x: 80, y: 50 }
         ]
     },
     {
         id: 'celtic_cross',
-        name: '凯尔特十字 (Celtic Cross)',
+        name: '凯尔特十字',
         description: '最经典的全面牌阵，用于深度解析复杂问题。',
         cardCount: 10,
         positions: [
-            { id: 1, name: 'Present', description: '核心现状', x: 38, y: 50 }, 
-            { id: 2, name: 'Obstacle', description: '阻碍/挑战', x: 38, y: 50 }, 
-            { id: 3, name: 'Subconscious', description: '潜意识/根源', x: 38, y: 72 },
-            { id: 4, name: 'Past', description: '过去的影响', x: 26, y: 50 },
-            { id: 5, name: 'Conscious', description: '显意识/目标', x: 38, y: 28 },
-            { id: 6, name: 'Future', description: '即将发生', x: 50, y: 50 },
-            { id: 7, name: 'Self', description: '自我态度', x: 65, y: 72 },
-            { id: 8, name: 'Environment', description: '环境影响', x: 65, y: 58 },
-            { id: 9, name: 'Hopes/Fears', description: '希望与恐惧', x: 65, y: 44 },
-            { id: 10, name: 'Outcome', description: '最终结果', x: 65, y: 30 }
+            { id: 1, name: '核心', description: '核心现状', x: 38, y: 50 }, 
+            { id: 2, name: '阻碍', description: '阻碍/挑战', x: 43, y: 55 }, 
+            { id: 3, name: '潜意识', description: '潜意识/根源', x: 38, y: 72 },
+            { id: 4, name: '过去', description: '过去的影响', x: 26, y: 50 },
+            { id: 5, name: '显意识', description: '显意识/目标', x: 38, y: 28 },
+            { id: 6, name: '未来', description: '即将发生', x: 50, y: 50 },
+            { id: 7, name: '自我', description: '自我态度', x: 65, y: 72 },
+            { id: 8, name: '环境', description: '环境影响', x: 65, y: 58 },
+            { id: 9, name: '愿望恐惧', description: '希望与恐惧', x: 65, y: 44 },
+            { id: 10, name: '结果', description: '最终结果', x: 65, y: 30 }
         ]
     },
     {
         id: 'horseshoe',
-        name: '马蹄铁 (Horseshoe)',
+        name: '马蹄铁',
         description: '随着时间推移的发展过程，适合具体事件的演变。',
         cardCount: 7,
         positions: [
-            { id: 1, name: 'Past', description: '过去', x: 15, y: 20 },
-            { id: 2, name: 'Present', description: '现在', x: 15, y: 50 },
-            { id: 3, name: 'Hidden', description: '隐因', x: 15, y: 80 },
-            { id: 4, name: 'Obstacle', description: '阻碍', x: 50, y: 90 },
-            { id: 5, name: 'Environment', description: '环境', x: 85, y: 80 },
-            { id: 6, name: 'Action', description: '建议', x: 85, y: 50 },
-            { id: 7, name: 'Outcome', description: '结果', x: 85, y: 20 }
+            { id: 1, name: '过去', description: '过去', x: 15, y: 20 },
+            { id: 2, name: '现在', description: '现在', x: 15, y: 50 },
+            { id: 3, name: '隐因', description: '隐因', x: 15, y: 80 },
+            { id: 4, name: '阻碍', description: '阻碍', x: 50, y: 90 },
+            { id: 5, name: '环境', description: '环境', x: 85, y: 80 },
+            { id: 6, name: '建议', description: '建议', x: 85, y: 50 },
+            { id: 7, name: '结果', description: '结果', x: 85, y: 20 }
         ]
     }
 ];
@@ -243,7 +269,8 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
   const [step, setStep] = useState<'question' | 'spread' | 'draw' | 'reading'>('question');
   const [question, setQuestion] = useState('');
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
-  const [recommendedSpreadId, setRecommendedSpreadId] = useState<string>('');
+  const [recommendedSpreadIds, setRecommendedSpreadIds] = useState<string[]>([]);
+  const [showAllSpreads, setShowAllSpreads] = useState(false);
   
   const [deck, setDeck] = useState(generateTarotDeck());
   const [isShuffling, setIsShuffling] = useState(false);
@@ -279,8 +306,9 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
   const handleQuestionSubmit = async () => {
       if(!question.trim()) return;
       setIsLoading(true);
-      const recId = await recommendSpread(question, SPREADS);
-      setRecommendedSpreadId(recId);
+      const recIds = await recommendSpread(question, SPREADS);
+      setRecommendedSpreadIds(recIds);
+      setShowAllSpreads(false); // Reset to showing only recommended initially
       setStep('spread');
       setIsLoading(false);
   };
@@ -376,10 +404,10 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
       if (!selectedSpread || !selections.fire || !selections.water || !selections.air || !selections.earth) return;
       
       const drawnCards = [
-          { ...selections.fire, position: 'Fire: 行动' },
-          { ...selections.water, position: 'Water: 情感' },
-          { ...selections.air, position: 'Air: 思维' },
-          { ...selections.earth, position: 'Earth: 物质' },
+          { ...selections.fire, position: '火' },
+          { ...selections.water, position: '水' },
+          { ...selections.air, position: '风' },
+          { ...selections.earth, position: '土' },
       ];
 
       await processReading(drawnCards);
@@ -404,13 +432,19 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
       try {
           const result = await generateFullReading(question, selectedSpread, drawnCards);
           
+          // MAP MEANINGS FROM AI RESULT TO CARDS
+          const cardsWithMeanings = drawnCards.map((card, index) => ({
+              ...card,
+              meaning: result.cardMeanings?.[index] || ""
+          }));
+
           const newSession: TarotReadingSession = {
               id: crypto.randomUUID(),
               date: Date.now(),
               question,
               spreadId: selectedSpread.id,
               spreadName: selectedSpread.name,
-              cards: drawnCards,
+              cards: cardsWithMeanings,
               interpretation: result.interpretation,
               chatHistory: [],
               feedback: null
@@ -429,7 +463,6 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
   const handleFeedback = (type: FeedbackType) => {
       if (!session) return;
       setSession({ ...session, feedback: type });
-      // In a real app, you would sync this to the backend/storage here
   };
 
   const handleChatSubmit = async () => {
@@ -455,7 +488,7 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
 
   return (
     <div ref={mainScrollRef} className="w-full h-full flex flex-col relative overflow-y-auto no-scrollbar scroll-smooth">
-      <SectionTitle title="灵感占卜" subtitle="READING · 潜意识链接" />
+      <SectionTitle title="灵感占卜" subtitle="潜意识链接" />
       
       {/* STEP 1: QUESTION */}
       {step === 'question' && (
@@ -498,192 +531,242 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                        <LayoutGrid className="w-5 h-5 text-lucid-glow" /> 选择牌阵
                    </h3>
                    
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                       {SPREADS.map(spread => (
-                           <Card 
-                               key={spread.id} 
-                               onClick={() => handleSelectSpread(spread)}
-                               className={`cursor-pointer hover:bg-white/10 group transition-all duration-300 relative overflow-hidden ${recommendedSpreadId === spread.id ? 'border-lucid-glow/50 ring-1 ring-lucid-glow/20 bg-lucid-glow/5' : 'border-white/5'}`}
-                           >
-                               {recommendedSpreadId === spread.id && (
-                                   <div className="absolute top-0 right-0 bg-lucid-glow text-black text-[10px] px-2 py-1 font-bold tracking-widest uppercase rounded-bl-lg z-10">
-                                       Recommended
+                   {/* Recommended Spreads Section */}
+                   <div className="mb-12">
+                       <div className="flex items-center gap-2 mb-4">
+                           <Sparkles className="w-4 h-4 text-lucid-glow animate-pulse" />
+                           <span className="text-xs font-bold text-lucid-glow tracking-widest uppercase">LUCID 推荐</span>
+                       </div>
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                           {SPREADS.filter(s => recommendedSpreadIds.includes(s.id)).map(spread => (
+                               <Card 
+                                   key={spread.id} 
+                                   onClick={() => handleSelectSpread(spread)}
+                                   className="cursor-pointer hover:bg-white/10 group transition-all duration-300 relative overflow-hidden border-lucid-glow/50 ring-1 ring-lucid-glow/20 bg-lucid-glow/5"
+                               >
+                                   <div className="flex justify-between items-start mb-2">
+                                       <h4 className="text-lg font-serif text-white group-hover:text-lucid-glow transition-colors">{spread.name}</h4>
+                                       <span className="text-xs bg-black/30 px-2 py-1 rounded text-stone-400">{spread.cardCount} 张</span>
                                    </div>
-                               )}
-                               <div className="flex justify-between items-start mb-2">
-                                   <h4 className="text-lg font-serif text-white group-hover:text-lucid-glow transition-colors">{spread.name}</h4>
-                                   <span className="text-xs bg-black/30 px-2 py-1 rounded text-stone-400">{spread.cardCount} 张</span>
-                               </div>
-                               <p className="text-xs text-stone-400 leading-relaxed font-sans">{spread.description}</p>
-                               
-                               {/* Mini visual representation of spread positions */}
-                               <div className="mt-4 h-24 relative bg-black/20 rounded border border-white/5 opacity-50 group-hover:opacity-100 transition-opacity">
-                                   {spread.positions.map(pos => (
-                                       <div 
-                                           key={pos.id}
-                                           className="absolute w-4 h-6 bg-white/10 border border-white/20 rounded-sm"
-                                           style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
-                                       ></div>
-                                   ))}
-                               </div>
-                           </Card>
-                       ))}
+                                   <p className="text-xs text-stone-400 leading-relaxed font-sans">{spread.description}</p>
+                                   <div className="mt-4 h-24 relative bg-black/20 rounded border border-white/5 opacity-80 group-hover:opacity-100 transition-opacity">
+                                       {spread.positions.map(pos => (
+                                           <div 
+                                               key={pos.id}
+                                               className="absolute w-4 h-6 bg-lucid-glow/30 border border-lucid-glow/50 rounded-sm"
+                                               style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
+                                           ></div>
+                                       ))}
+                                   </div>
+                               </Card>
+                           ))}
+                       </div>
                    </div>
+                   
+                   {/* Show All Toggle */}
+                   <div className="flex flex-col items-center">
+                       <button 
+                           onClick={() => setShowAllSpreads(!showAllSpreads)}
+                           className="flex items-center gap-2 text-stone-500 hover:text-white transition-colors text-sm py-2 px-4 rounded-full hover:bg-white/5 mb-6"
+                       >
+                           {showAllSpreads ? (
+                               <>收起其他牌阵 <ChevronUp className="w-4 h-4" /></>
+                           ) : (
+                               <>查看全部牌阵 <ChevronDown className="w-4 h-4" /></>
+                           )}
+                       </button>
+                   </div>
+
+                   {/* Other Spreads Grid */}
+                   {showAllSpreads && (
+                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+                           {SPREADS.filter(s => !recommendedSpreadIds.includes(s.id)).map(spread => (
+                               <Card 
+                                   key={spread.id} 
+                                   onClick={() => handleSelectSpread(spread)}
+                                   className="cursor-pointer hover:bg-white/10 group transition-all duration-300 relative overflow-hidden border-white/5 opacity-80 hover:opacity-100"
+                               >
+                                   <div className="flex justify-between items-start mb-2">
+                                       <h4 className="text-lg font-serif text-white group-hover:text-lucid-glow transition-colors">{spread.name}</h4>
+                                       <span className="text-xs bg-black/30 px-2 py-1 rounded text-stone-400">{spread.cardCount} 张</span>
+                                   </div>
+                                   <p className="text-xs text-stone-400 leading-relaxed font-sans">{spread.description}</p>
+                                   <div className="mt-4 h-24 relative bg-black/20 rounded border border-white/5 opacity-50 group-hover:opacity-100 transition-opacity">
+                                       {spread.positions.map(pos => (
+                                           <div 
+                                               key={pos.id}
+                                               className="absolute w-4 h-6 bg-white/10 border border-white/20 rounded-sm"
+                                               style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
+                                           ></div>
+                                       ))}
+                                   </div>
+                               </Card>
+                           ))}
+                       </div>
+                   )}
                </div>
           </div>
       )}
 
       {/* STEP 3: SHUFFLE & DRAW */}
       {step === 'draw' && selectedSpread && (
-          <div className="flex-1 flex flex-col relative animate-fade-in">
-               {/* Header Info */}
-               <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-start px-6 pt-2 pointer-events-none">
-                   <div className="pointer-events-auto">
-                       <Button variant="ghost" onClick={() => setStep('spread')} className="text-xs text-stone-500 hover:text-white pl-0">
-                           <X className="w-4 h-4 mr-1" /> 更换牌阵
-                       </Button>
+          isGenerating ? (
+              // --- TRANSITION / LOADING STATE (REPLACES DECK) ---
+              <div className="flex-1 flex flex-col items-center justify-center animate-fade-in">
+                   <div className="relative">
+                       <div className="absolute inset-0 bg-lucid-glow/20 blur-[60px] rounded-full animate-pulse-slow"></div>
+                       <div className="w-24 h-24 relative mb-10 z-10">
+                           <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-lucid-glow animate-spin"></div>
+                           <div className="absolute inset-4 rounded-full border-b-2 border-l-2 border-white/50 animate-spin-slow"></div>
+                           <div className="absolute inset-0 flex items-center justify-center">
+                               <Sparkles className="w-8 h-8 text-lucid-glow animate-pulse" />
+                           </div>
+                       </div>
                    </div>
-                   <div className="text-right">
-                       <h3 className="text-lg text-white font-serif">{selectedSpread.name}</h3>
-                       {selectedSpread.id !== 'four_elements' && (
-                           <p className="text-xs text-lucid-glow tracking-widest">{selectedIndices.length} / {selectedSpread.cardCount}</p>
+                   <h3 className="text-2xl font-serif text-white tracking-[0.3em] mb-4 drop-shadow-md animate-pulse">LUCID IS READING</h3>
+                   <div className="flex items-center gap-2">
+                       <Loader2 className="w-4 h-4 text-stone-400 animate-spin" />
+                       <p className="text-stone-400 font-serif italic tracking-wide text-sm">正在链接潜意识星图...</p>
+                   </div>
+              </div>
+          ) : (
+              // --- NORMAL DRAWING STATE ---
+              <div className="flex-1 flex flex-col relative animate-fade-in">
+                   {/* Header Info */}
+                   <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-start px-6 pt-2 pointer-events-none">
+                       <div className="pointer-events-auto">
+                           <Button variant="ghost" onClick={() => setStep('spread')} className="text-xs text-stone-500 hover:text-white pl-0">
+                               <X className="w-4 h-4 mr-1" /> 更换牌阵
+                           </Button>
+                       </div>
+                       <div className="text-right">
+                           <h3 className="text-lg text-white font-serif">{selectedSpread.name}</h3>
+                           {selectedSpread.id !== 'four_elements' && (
+                               <p className="text-xs text-lucid-glow tracking-widest">{selectedIndices.length} / {selectedSpread.cardCount}</p>
+                           )}
+                       </div>
+                   </div>
+
+                   {/* Center Action Area */}
+                   <div className="flex-1 flex flex-col items-center justify-center min-h-[500px]">
+                       {!hasShuffled && (
+                           <div className="text-center animate-fade-in z-30">
+                               <div 
+                                   onClick={handleShuffle}
+                                   className={`w-40 h-60 bg-gradient-to-br from-stone-800 to-stone-900 rounded-xl border border-white/20 shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-500 group relative overflow-hidden`}
+                               >
+                                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
+                                    <div className="text-center relative z-10">
+                                        <Shuffle className={`w-8 h-8 text-lucid-glow mx-auto mb-4 ${isShuffling ? 'animate-spin' : ''}`} />
+                                        <span className="text-sm tracking-[0.2em] text-white uppercase block">Shuffle</span>
+                                    </div>
+                               </div>
+                               <p className="mt-6 text-stone-400 font-serif animate-pulse">
+                                   {selectedSpread.id === 'four_elements' 
+                                    ? '点击进行四元素洗牌...' 
+                                    : '点击洗牌，注入你的能量...'}
+                               </p>
+                           </div>
                        )}
-                   </div>
-               </div>
 
-               {/* Center Action Area */}
-               <div className="flex-1 flex flex-col items-center justify-center min-h-[500px]">
-                   {!hasShuffled && (
-                       <div className="text-center animate-fade-in z-30">
-                           <div 
-                               onClick={handleShuffle}
-                               className={`w-40 h-60 bg-gradient-to-br from-stone-800 to-stone-900 rounded-xl border border-white/20 shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-500 group relative overflow-hidden`}
-                           >
-                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
-                                <div className="text-center relative z-10">
-                                    <Shuffle className={`w-8 h-8 text-lucid-glow mx-auto mb-4 ${isShuffling ? 'animate-spin' : ''}`} />
-                                    <span className="text-sm tracking-[0.2em] text-white uppercase block">Shuffle</span>
-                                </div>
-                           </div>
-                           <p className="mt-6 text-stone-400 font-serif animate-pulse">
-                               {selectedSpread.id === 'four_elements' 
-                                ? '点击进行四元素洗牌 (Four Elements)...' 
-                                : '点击洗牌，注入你的能量...'}
-                           </p>
-                       </div>
-                   )}
-                   
-                   {/* Generating Loader */}
-                   {isGenerating && (
-                       <div className="absolute inset-0 z-50 flex flex-col items-center justify-center animate-fade-in transition-all duration-700 bg-stone-950/30 backdrop-blur-2xl rounded-[2rem] border border-white/10 m-1">
-                           <div className="w-24 h-24 relative mb-8">
-                               <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-lucid-glow animate-spin"></div>
-                               <div className="absolute inset-4 rounded-full border-b-2 border-l-2 border-white/50 animate-spin-slow"></div>
-                               <div className="absolute inset-0 flex items-center justify-center">
-                                   <Sparkles className="w-8 h-8 text-lucid-glow animate-pulse" />
+                       {/* DECK AREA */}
+                       {hasShuffled && (
+                           selectedSpread.id === 'four_elements' ? (
+                               // --- FOUR ELEMENTS UI ---
+                               <div className="w-full flex-1 flex flex-col justify-start items-center py-10 gap-2 overflow-y-auto px-4 pb-20 no-scrollbar">
+                                   <ElementalDeckRow 
+                                        element="fire" 
+                                        title="🔥 火元素" 
+                                        description="行动 · 热情 · 创造力"
+                                        cards={elementalDecks.fire} 
+                                        selectedCard={elementalSelections.fire}
+                                        onSelect={(c) => handleElementCardClick('fire', c)}
+                                   />
+                                   <ElementalDeckRow 
+                                        element="water" 
+                                        title="💧 水元素" 
+                                        description="情感 · 直觉 · 潜意识"
+                                        cards={elementalDecks.water} 
+                                        selectedCard={elementalSelections.water}
+                                        onSelect={(c) => handleElementCardClick('water', c)}
+                                   />
+                                   <ElementalDeckRow 
+                                        element="air" 
+                                        title="🌬️ 风元素" 
+                                        description="思维 · 沟通 · 逻辑"
+                                        cards={elementalDecks.air} 
+                                        selectedCard={elementalSelections.air}
+                                        onSelect={(c) => handleElementCardClick('air', c)}
+                                   />
+                                   <ElementalDeckRow 
+                                        element="earth" 
+                                        title="🌱 土元素" 
+                                        description="物质 · 现实 · 成果"
+                                        cards={elementalDecks.earth} 
+                                        selectedCard={elementalSelections.earth}
+                                        onSelect={(c) => handleElementCardClick('earth', c)}
+                                   />
                                </div>
-                           </div>
-                           <h3 className="text-2xl font-serif text-white tracking-[0.2em] mb-2 drop-shadow-md">LUCID IS READING</h3>
-                           <p className="text-stone-300 font-serif italic tracking-wide">正在解析牌面星象...</p>
-                       </div>
-                   )}
+                           ) : (
+                               // --- STANDARD UI ---
+                               <div className="w-full flex-1 relative flex flex-col justify-end min-h-[500px]">
+                                   {/* Text Overlay - Moved down to avoid header overlap - Top-16 */}
+                                   <div className="absolute top-16 w-full text-center pointer-events-none z-[200] transition-opacity duration-500" style={{ opacity: selectedIndices.length === selectedSpread.cardCount ? 0 : 1 }}>
+                                       <p className="text-xl font-serif text-white tracking-widest drop-shadow-lg">
+                                           {selectedIndices.length === 0 ? "请抽取第一张牌" : "继续抽取下一张"}
+                                       </p>
+                                       <p className="text-sm text-lucid-glow mt-2 font-serif">
+                                           位置: {selectedSpread.positions[selectedIndices.length]?.name}
+                                       </p>
+                                   </div>
 
-                   {/* DECK AREA */}
-                   {hasShuffled && !isGenerating && (
-                       selectedSpread.id === 'four_elements' ? (
-                           // --- FOUR ELEMENTS UI ---
-                           <div className="w-full flex-1 flex flex-col justify-start items-center py-10 gap-2 overflow-y-auto px-4 pb-20 no-scrollbar">
-                               <ElementalDeckRow 
-                                    element="fire" 
-                                    title="🔥 火元素 (Fire)" 
-                                    description="行动 · 热情 · 创造力"
-                                    cards={elementalDecks.fire} 
-                                    selectedCard={elementalSelections.fire}
-                                    onSelect={(c) => handleElementCardClick('fire', c)}
-                               />
-                               <ElementalDeckRow 
-                                    element="water" 
-                                    title="💧 水元素 (Water)" 
-                                    description="情感 · 直觉 · 潜意识"
-                                    cards={elementalDecks.water} 
-                                    selectedCard={elementalSelections.water}
-                                    onSelect={(c) => handleElementCardClick('water', c)}
-                               />
-                               <ElementalDeckRow 
-                                    element="air" 
-                                    title="🌬️ 风元素 (Air)" 
-                                    description="思维 · 沟通 · 逻辑"
-                                    cards={elementalDecks.air} 
-                                    selectedCard={elementalSelections.air}
-                                    onSelect={(c) => handleElementCardClick('air', c)}
-                               />
-                               <ElementalDeckRow 
-                                    element="earth" 
-                                    title="🌱 土元素 (Earth)" 
-                                    description="物质 · 现实 · 成果"
-                                    cards={elementalDecks.earth} 
-                                    selectedCard={elementalSelections.earth}
-                                    onSelect={(c) => handleElementCardClick('earth', c)}
-                               />
-                           </div>
-                       ) : (
-                           // --- STANDARD UI ---
-                           <div className="w-full flex-1 relative flex flex-col justify-end min-h-[500px]">
-                               <div className="absolute top-0 pt-2 w-full text-center pointer-events-none z-[200] transition-opacity duration-500" style={{ opacity: selectedIndices.length === selectedSpread.cardCount ? 0 : 1 }}>
-                                   <p className="text-xl font-serif text-white tracking-widest drop-shadow-lg">
-                                       {selectedIndices.length === 0 ? "请抽取第一张牌" : "继续抽取下一张"}
-                                   </p>
-                                   <p className="text-sm text-lucid-glow mt-2 font-serif">
-                                       位置: {selectedSpread.positions[selectedIndices.length]?.name}
-                                   </p>
-                               </div>
+                                   <div ref={deckScrollRef} className="w-full overflow-x-auto overflow-y-hidden no-scrollbar px-4 pt-80 pb-36 flex justify-start items-end h-full">
+                                       <div className="flex items-end min-w-max h-full relative mx-auto px-32"> 
+                                           {deck.map((card, idx) => {
+                                               const isSelected = selectedIndices.includes(idx);
+                                               const centerIndex = 39; 
+                                               const distFromCenter = idx - centerIndex;
+                                               const arcLift = 80;
+                                               const yDrop = Math.pow(Math.abs(distFromCenter), 2) / 16;
+                                               const normalTranslateY = -1 * arcLift + yDrop;
+                                               const normalRotate = distFromCenter * 1.1;
 
-                               <div ref={deckScrollRef} className="w-full overflow-x-auto overflow-y-hidden no-scrollbar px-4 pt-80 pb-36 flex justify-start items-end h-full">
-                                   <div className="flex items-end min-w-max h-full relative mx-auto px-32"> 
-                                       {deck.map((card, idx) => {
-                                           const isSelected = selectedIndices.includes(idx);
-                                           const centerIndex = 39; 
-                                           const distFromCenter = idx - centerIndex;
-                                           const arcLift = 80;
-                                           const yDrop = Math.pow(Math.abs(distFromCenter), 2) / 16;
-                                           const normalTranslateY = -1 * arcLift + yDrop;
-                                           const normalRotate = distFromCenter * 1.1;
-
-                                           return (
-                                               <div 
-                                                   key={card.id}
-                                                   onClick={() => handleCardClick(idx)}
-                                                   style={{ 
-                                                       transform: isSelected 
-                                                           ? `translateY(-180px) rotate(0deg) scale(1.1)` 
-                                                           : `translateY(${normalTranslateY}px) rotate(${normalRotate}deg)`,
-                                                       zIndex: isSelected ? 100 : 80 - Math.abs(distFromCenter),
-                                                       marginLeft: idx === 0 ? '0' : '-1.8rem',
-                                                       aspectRatio: '1 / 1.714'
-                                                   }}
-                                                   className={`
-                                                       w-16 md:w-24 rounded-lg cursor-pointer shadow-xl transition-all duration-300 origin-bottom
-                                                       bg-stone-800 flex-shrink-0 relative overflow-hidden
-                                                       ${!isSelected ? 'hover:-translate-y-16 hover:scale-110 hover:shadow-lucid-glow/50' : ''}
-                                                       ${isSelected ? 'ring-2 ring-lucid-glow shadow-[0_0_30px_rgba(253,186,116,0.5)]' : ''}
-                                                   `}
-                                               >
-                                                   <TarotCardImage card={card} showBack={true} />
-                                                   {isSelected && (
-                                                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 font-bold text-white text-lg">
-                                                           {selectedIndices.indexOf(idx) + 1}
-                                                       </div>
-                                                   )}
-                                               </div>
-                                           );
-                                       })}
+                                               return (
+                                                   <div 
+                                                       key={card.id}
+                                                       onClick={() => handleCardClick(idx)}
+                                                       style={{ 
+                                                           transform: isSelected 
+                                                               ? `translateY(-180px) rotate(0deg) scale(1.1)` 
+                                                               : `translateY(${normalTranslateY}px) rotate(${normalRotate}deg)`,
+                                                           zIndex: isSelected ? 100 : 80 - Math.abs(distFromCenter),
+                                                           marginLeft: idx === 0 ? '0' : '-1.8rem',
+                                                           aspectRatio: '1 / 1.714'
+                                                       }}
+                                                       className={`
+                                                           w-16 md:w-24 rounded-lg cursor-pointer shadow-xl transition-all duration-300 origin-bottom
+                                                           bg-stone-800 flex-shrink-0 relative overflow-hidden
+                                                           ${!isSelected ? 'hover:-translate-y-16 hover:scale-110 hover:shadow-lucid-glow/50' : ''}
+                                                           ${isSelected ? 'ring-2 ring-lucid-glow shadow-[0_0_30px_rgba(253,186,116,0.5)]' : ''}
+                                                       `}
+                                                   >
+                                                       <TarotCardImage card={card} showBack={true} />
+                                                       {isSelected && (
+                                                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 font-bold text-white text-lg">
+                                                               {selectedIndices.indexOf(idx) + 1}
+                                                           </div>
+                                                       )}
+                                                   </div>
+                                               );
+                                           })}
+                                       </div>
                                    </div>
                                </div>
-                           </div>
-                       )
-                   )}
-               </div>
-          </div>
+                           )
+                       )}
+                   </div>
+              </div>
+          )
       )}
 
       {/* STEP 4: RESULT */}
@@ -744,19 +827,19 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                                        onClick={() => handleFeedback('accurate')}
                                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs transition-all duration-300 ${session.feedback === 'accurate' ? 'bg-lucid-glow text-stone-900 font-bold shadow-lg shadow-lucid-glow/20' : 'bg-white/5 hover:bg-white/10 text-stone-400'}`}
                                    >
-                                       <ThumbsUp className="w-3.5 h-3.5" /> 符合现状
+                                       <ThumbsUp className="w-3.5 h-3.5" /> 准
                                    </button>
                                    <button 
                                        onClick={() => handleFeedback('comforted')}
                                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs transition-all duration-300 ${session.feedback === 'comforted' ? 'bg-lucid-accent text-stone-900 font-bold shadow-lg shadow-lucid-accent/20' : 'bg-white/5 hover:bg-white/10 text-stone-400'}`}
                                    >
-                                       <Heart className="w-3.5 h-3.5" /> 感到安慰
+                                       <Heart className="w-3.5 h-3.5" /> 治愈
                                    </button>
                                    <button 
                                        onClick={() => handleFeedback('confused')}
                                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs transition-all duration-300 ${session.feedback === 'confused' ? 'bg-stone-200 text-stone-900 font-bold shadow-lg' : 'bg-white/5 hover:bg-white/10 text-stone-400'}`}
                                    >
-                                       <HelpCircle className="w-3.5 h-3.5" /> 有点困惑
+                                       <HelpCircle className="w-3.5 h-3.5" /> 困惑
                                    </button>
                                </div>
                            </div>
@@ -830,13 +913,15 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                   <div className="flex justify-center gap-2 mb-6">
                       <span className="px-3 py-1 bg-white/10 rounded-full text-xs text-stone-400 uppercase tracking-widest">{focusedCard.position}</span>
                       <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-widest ${focusedCard.isReversed ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                          {focusedCard.isReversed ? 'Reversed' : 'Upright'}
+                          {focusedCard.isReversed ? '逆位' : '正位'}
                       </span>
                   </div>
-                  <p className="text-stone-300 font-serif leading-loose text-lg px-8">
-                      {/* Note: In a real app we might want specific meanings per card, but for now we rely on the main interpretation text */}
-                      (Detailed card meaning is integrated into the full reading.)
-                  </p>
+                  {/* CHANGED: Display Card Meaning if available, otherwise nothing */}
+                  {focusedCard.meaning && (
+                    <p className="text-stone-300 font-serif leading-loose text-lg px-8">
+                        {focusedCard.meaning}
+                    </p>
+                  )}
               </div>
           )}
       </Modal>

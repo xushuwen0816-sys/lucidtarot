@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { generateDailyReading, generateDailyPractice } from '../services/geminiService';
 import { TarotCard, DailyPractice, DailyRecord } from '../types';
 import { Button, Card, SectionTitle, LoadingSpinner, TabNav, TarotCardImage, SimpleMarkdown } from './Shared';
-import { CreditCard, Sun, Shuffle, RotateCcw, Sparkles } from 'lucide-react';
+import { CreditCard, Sun, Shuffle, RotateCcw, Sparkles, Loader2 } from 'lucide-react';
 
 interface EnergyCheckViewProps {
     onSaveDaily: (record: DailyRecord) => void;
@@ -129,7 +130,7 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
                   const card = deck[deckIndex];
                   return {
                       ...card,
-                      position: i === 0 ? '身 Body' : i === 1 ? '心 Mind' : '灵 Spirit'
+                      position: i === 0 ? '身' : i === 1 ? '心' : '灵'
                   };
               }); 
     
@@ -174,11 +175,37 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
       }
   };
 
-  const positions = ['身 Body', '心 Mind', '灵 Spirit'];
+  const positions = ['身', '心', '灵'];
+
+  // --- TRANSITION VIEW ---
+  if (loading || isRevealing) {
+      return (
+        <div className="w-full h-full flex flex-col">
+            <SectionTitle title="每日能量" subtitle="频率校准" />
+            <div className="flex-1 flex flex-col items-center justify-center animate-fade-in">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-lucid-glow/20 blur-[60px] rounded-full animate-pulse-slow"></div>
+                    <div className="w-24 h-24 relative mb-10 z-10">
+                        <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-lucid-glow animate-spin"></div>
+                        <div className="absolute inset-4 rounded-full border-b-2 border-l-2 border-white/50 animate-spin-slow"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <Sparkles className="w-8 h-8 text-lucid-glow animate-pulse" />
+                        </div>
+                    </div>
+                </div>
+                <h3 className="text-2xl font-serif text-white tracking-[0.3em] mb-4 drop-shadow-md animate-pulse">CONNECTING</h3>
+                <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-stone-400 animate-spin" />
+                    <p className="text-stone-400 font-serif italic tracking-wide text-sm">正在解读今日能量场...</p>
+                </div>
+            </div>
+        </div>
+      );
+  }
 
   return (
     <div className="w-full h-full flex flex-col">
-      <SectionTitle title="每日能量" subtitle="DAILY · 频率校准" />
+      <SectionTitle title="每日能量" subtitle="频率校准" />
 
       <TabNav 
         activeTab={activeTab}
@@ -194,7 +221,7 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
         <div className="w-full h-full flex flex-col">
             
             {/* 1. INITIAL / SHUFFLE STATE */}
-            {!hasShuffled && !loading && !dailyReading && (
+            {!hasShuffled && !dailyReading && (
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[500px] px-4">
                     <div className="text-center animate-fade-in z-30">
                         <div 
@@ -212,23 +239,8 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
                 </div>
             )}
 
-            {/* LOADING OVERLAY */}
-            {(loading || isRevealing) && (
-                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center animate-fade-in transition-all duration-700 bg-stone-950/30 backdrop-blur-2xl rounded-[2rem] border border-white/10 m-1">
-                    <div className="w-24 h-24 relative mb-8">
-                        <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-lucid-glow animate-spin"></div>
-                        <div className="absolute inset-4 rounded-full border-b-2 border-l-2 border-white/50 animate-spin-slow"></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <Sparkles className="w-8 h-8 text-lucid-glow animate-pulse" />
-                        </div>
-                    </div>
-                    <h3 className="text-2xl font-serif text-white tracking-[0.2em] mb-2 drop-shadow-md">CONNECTING</h3>
-                    <p className="text-stone-300 font-serif italic tracking-wide">正在解读今日能量场...</p>
-                </div>
-            )}
-
             {/* 2. DRAWING STATE - FULL WIDTH DECK */}
-            {hasShuffled && !dailyReading && !loading && !isRevealing && (
+            {hasShuffled && !dailyReading && (
                 <div className="w-full flex-1 relative flex flex-col justify-end min-h-[500px]">
                         {/* Text Overlay */}
                         <div className="absolute top-0 pt-2 w-full text-center pointer-events-none z-[200] transition-opacity duration-500" style={{ opacity: selectedIndices.length === 3 ? 0 : 1 }}>
@@ -345,13 +357,13 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
                         <span className="text-xs font-sans tracking-widest text-stone-500 uppercase">今日能量</span>
                         <h2 className="text-3xl font-serif text-white mt-2 mb-6">{practice.energyStatus}</h2>
                         <div className="w-12 h-[1px] bg-white/10 mx-auto mb-6"></div>
-                        <span className="text-xs font-sans tracking-widest text-lucid-accent/80 uppercase block mb-2">肯定语</span>
+                        <span className="text-xs font-sans tracking-widest text-lucid-accent/80 uppercase block mb-2">今日肯定语</span>
                         <p className="text-xl text-lucid-glow font-serif italic">"{practice.todaysAffirmation}"</p>
                     </Card>
                     <Card className="flex items-start gap-4">
                         <div className="p-2 bg-emerald-900/20 rounded-full text-emerald-400 mt-1"><Sun className="w-5 h-5" /></div>
                         <div>
-                            <h4 className="text-base font-bold text-emerald-100 mb-1">今日行动</h4>
+                            <h4 className="text-base font-bold text-emerald-100 mb-1">今日微行动</h4>
                             <p className="text-stone-300 font-serif leading-relaxed">{practice.actionStep}</p>
                         </div>
                     </Card>

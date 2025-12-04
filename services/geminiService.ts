@@ -156,28 +156,39 @@ export const checkConnection = async (): Promise<{ success: boolean; message?: s
 // --- CORE TAROT SERVICES ---
 
 // 1. Recommend Spread based on Question
-export const recommendSpread = async (question: string, availableSpreads: Spread[]): Promise<string> => {
+export const recommendSpread = async (question: string, availableSpreads: Spread[]): Promise<string[]> => {
     const prompt = `
         User Question: "${question}"
         Available Spreads:
         ${availableSpreads.map(s => `- ID: ${s.id}, Name: ${s.name}, Desc: ${s.description}`).join('\n')}
 
-        Based on the user's question, recommend the single most suitable spread ID from the list.
-        Return ONLY the ID string.
+        Based on the user's question, recommend the top 3 most suitable spread IDs.
+        Return strictly a JSON array of strings, e.g.: ["id1", "id2", "id3"]
+        Do not add markdown formatting.
     `;
 
     try {
+        let text = "";
         if (currentProvider === 'siliconflow') {
-            return await callSiliconFlow("You are a Tarot expert.", prompt);
+            text = await callSiliconFlow("You are a Tarot expert. Output JSON array.", prompt, true);
         } else {
             const response = await getAi().models.generateContent({
                 model: "gemini-2.5-flash",
                 contents: prompt,
+                config: { responseMimeType: "application/json" }
             });
-            return response.text?.trim() || availableSpreads[0].id;
+            text = response.text || "[]";
         }
+        
+        const cleaned = cleanJsonString(text);
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.slice(0, 3);
+        }
+        return [availableSpreads[0].id];
     } catch (e) {
-        return availableSpreads[0].id;
+        console.error("Recommend spread error", e);
+        return [availableSpreads[0].id];
     }
 };
 
@@ -213,7 +224,7 @@ export const generateFullReading = async (
         Output strictly as JSON:
         {
             "interpretation": "The full markdown formatted text of the reading...",
-            "cardMeanings": ["Short meaning for card 1", "Short meaning for card 2", ...] (One string per card, matching the order)
+            "cardMeanings": ["Specific meaning for card 1", "Specific meaning for card 2", ...] (MUST provide a specific string for EVERY card drawn. Do not omit.)
         }
         Language: Chinese (Warm, mystical, professional).
     `;
@@ -354,15 +365,17 @@ export const generateDailyPractice = async (context: string): Promise<DailyPract
         Generate a daily practice for ${userName}.
         
         **REQUIREMENTS**:
-        1. **actionStep**: MUST be a **CONCRETE, PHYSICAL ACTION**. 
-           - Bad: "Be happy today", "Think positive".
-           - Good: "Drink a glass of warm lemon water at 8AM", "Write down 3 fears on a piece of paper and tear it up", "Walk barefoot on grass for 5 minutes".
-           - It must be something the user can physically DO with their body or hands.
+        1. **actionStep**: MUST be a **SIMPLE, EASY-TO-EXECUTE MICRO-HABIT**.
+           - **DO NOT** specify exact times (like "at 3pm"). 
+           - **DO NOT** require specific items that might not be available (like "herbal tea", "candles").
+           - **DO** focus on body awareness, breathing, simple observation, or mindset shifts.
+           - Examples of GOOD actions: "Take 3 deep breaths when you feel stressed", "Look at the sky for 1 minute", "Stretch your arms up and release tension", "Write down one thing you are grateful for".
+           - Keep it flexible and low-pressure.
         
         JSON: { 
             "energyStatus": "Short poetic phrase (e.g. 静谧之海, 破茧成蝶)", 
             "todaysAffirmation": "One powerful sentence to reprogram the subconscious", 
-            "actionStep": "One specific, physical, executable action with details (time/object/method)." 
+            "actionStep": "One simple, flexible, physical action." 
         }
         Language: Chinese.
     `;
