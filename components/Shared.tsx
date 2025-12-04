@@ -174,15 +174,19 @@ export const SimpleMarkdown: React.FC<{ content: any; className?: string }> = ({
       if (trimmed === '---' || trimmed === '***') return <hr key={index} className="border-white/10 my-8" />;
       
       // Paragraph
-      return <p key={index} className={`text-stone-300 leading-relaxed mb-4 font-serif whitespace-pre-wrap text-base md:text-lg ${className}`}>{parseInline(trimmed)}</p>;
+      // IMPORTANT: Added `last:mb-0` to fix the asymmetry in chat bubbles where bottom padding looked larger than top
+      return <p key={index} className={`text-stone-300 leading-relaxed mb-4 last:mb-0 font-serif whitespace-pre-wrap text-base md:text-lg ${className}`}>{parseInline(trimmed)}</p>;
   };
 
   const parseInline = (text: string) => {
-      // Bold
-      const parts = text.split(/(\*\*.*?\*\*|__.*?__)/g);
+      // Improved regex to handle **bold** more reliably
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      
       return parts.map((part, i) => {
-          if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
-              return <strong key={i} className="text-white font-semibold tracking-wide text-shadow-sm">{part.slice(2, -2)}</strong>;
+          if (part.startsWith('**') && part.endsWith('**')) {
+               const content = part.slice(2, -2); // Remove delimiters
+               if (!content.trim()) return part;
+               return <strong key={i} className="text-white font-semibold tracking-wide text-shadow-sm">{content}</strong>;
           }
           return part;
       });

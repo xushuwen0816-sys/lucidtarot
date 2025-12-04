@@ -504,7 +504,7 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                       <textarea 
                           value={question}
                           onChange={(e) => setQuestion(e.target.value)}
-                          placeholder="例如：我和TA的关系未来发展如何？我最近的职业方向是什么？"
+                          placeholder="例如：TA对我是什么想法？这段关系的未来发展如何？我最近的事业运势怎样？"
                           className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 text-xl text-white placeholder-stone-600 focus:outline-none focus:border-lucid-glow/50 focus:border-lucid-glow/50 focus:ring-1 focus:ring-lucid-glow/30 transition-all resize-none shadow-2xl relative z-10 font-serif leading-relaxed"
                           rows={4}
                       />
@@ -846,13 +846,16 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                        </Card>
 
                        {/* Chat Section */}
-                       <div className="pt-8">
-                           <h3 className="text-xl font-serif text-white mb-6 flex items-center gap-2">
+                       <div className="transition-all duration-500 w-full max-w-3xl mx-auto pt-8">
+                           <h3 className="text-xl font-serif text-white mb-4 flex items-center gap-2 animate-fade-in">
                                <Sparkles className="w-5 h-5 text-lucid-glow" /> 追问 LUCID
                            </h3>
                            
-                           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 min-h-[300px] flex flex-col">
-                               <div className="flex-1 space-y-6 mb-6 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                           <div className={`
+                                flex flex-col transition-all duration-500 rounded-2xl
+                                ${session.chatHistory.length > 0 ? 'bg-white/5 border border-white/10 p-6 min-h-[300px]' : 'bg-transparent border-0 p-0'}
+                           `}>
+                               <div className={`flex-1 space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 ${session.chatHistory.length > 0 ? 'mb-6' : 'mb-0 hidden'}`}>
                                    {session.chatHistory.map((msg, idx) => (
                                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                            <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
@@ -860,7 +863,7 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                                                ? 'bg-lucid-glow/10 text-white rounded-tr-sm border border-lucid-glow/10' 
                                                : 'bg-black/30 text-stone-300 rounded-tl-sm border border-white/5'
                                            }`}>
-                                               {msg.text}
+                                               <SimpleMarkdown content={msg.text} />
                                            </div>
                                        </div>
                                    ))}
@@ -882,7 +885,9 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
                                        onChange={(e) => setChatInput(e.target.value)}
                                        onKeyDown={(e) => e.key === 'Enter' && handleChatSubmit()}
                                        placeholder="对解读有疑问？请告诉我..."
-                                       className="w-full bg-black/40 border border-white/10 rounded-full py-4 pl-6 pr-14 text-white focus:outline-none focus:border-lucid-glow/30 transition-all font-serif"
+                                       className={`w-full bg-black/40 border border-white/10 rounded-full text-white focus:outline-none focus:border-lucid-glow/30 transition-all font-serif
+                                           ${session.chatHistory.length > 0 ? 'py-3 pl-6 pr-14 text-sm' : 'py-3 pl-6 pr-14 text-base'} 
+                                       `}
                                    />
                                    <button 
                                        onClick={handleChatSubmit}

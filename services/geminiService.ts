@@ -13,8 +13,89 @@ let currentProvider: 'gemini' | 'siliconflow' = (typeof localStorage !== 'undefi
 const cleanJsonString = (str: string): string => {
   if (!str) return "{}";
   let cleaned = str.trim();
-  cleaned = cleaned.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
-  return cleaned;
+  
+  // Remove markdown code blocks markers if present
+  cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+
+  // Extract JSON substring by finding the first brace/bracket and matching the closing one
+  const firstBrace = cleaned.indexOf('{');
+  const firstBracket = cleaned.indexOf('[');
+  
+  if (firstBrace === -1 && firstBracket === -1) return "{}";
+  
+  let startIndex = 0;
+  let isObject = false;
+
+  // Determine if we are looking for an object or array based on which comes first
+  if (firstBrace !== -1 && firstBracket !== -1) {
+      if (firstBrace < firstBracket) {
+          startIndex = firstBrace;
+          isObject = true;
+      } else {
+          startIndex = firstBracket;
+          isObject = false;
+      }
+  } else if (firstBrace !== -1) {
+      startIndex = firstBrace;
+      isObject = true;
+  } else {
+      startIndex = firstBracket;
+      isObject = false;
+  }
+
+  const openChar = isObject ? '{' : '[';
+  const closeChar = isObject ? '}' : ']';
+  
+  let balance = 0;
+  let endIndex = -1;
+  let inString = false;
+  let escape = false;
+
+  // Iterate to find the matching closing bracket
+  for (let i = startIndex; i < cleaned.length; i++) {
+      const char = cleaned[i];
+      
+      if (escape) {
+          escape = false;
+          continue;
+      }
+      
+      if (char === '\\') {
+          escape = true;
+          continue;
+      }
+      
+      if (char === '"') {
+          inString = !inString;
+          continue;
+      }
+      
+      if (!inString) {
+          if (char === openChar) {
+              balance++;
+          } else if (char === closeChar) {
+              balance--;
+              if (balance === 0) {
+                  endIndex = i;
+                  break;
+              }
+          }
+      }
+  }
+
+  // If we found a valid end index, slice it
+  if (endIndex !== -1) {
+      return cleaned.substring(startIndex, endIndex + 1);
+  }
+  
+  // Fallback: If counting failed (e.g. incomplete JSON), try simplistic lastIndexOf
+  const lastIndex = isObject ? cleaned.lastIndexOf('}') : cleaned.lastIndexOf(']');
+  if (lastIndex > startIndex) {
+      return cleaned.substring(startIndex, lastIndex + 1);
+  }
+  
+  // If all else fails, return the cleaned string (might still fail parsing)
+  return cleaned.substring(startIndex);
 };
 
 const sanitizeString = (val: any): string => {
@@ -181,9 +262,13 @@ export const recommendSpread = async (question: string, availableSpreads: Spread
         }
         
         const cleaned = cleanJsonString(text);
-        const parsed = JSON.parse(cleaned);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.slice(0, 3);
+        try {
+            const parsed = JSON.parse(cleaned);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed.slice(0, 3);
+            }
+        } catch (parseError) {
+             console.error("JSON Parse Error in recommendSpread:", parseError, "Cleaned text:", cleaned);
         }
         return [availableSpreads[0].id];
     } catch (e) {
@@ -242,7 +327,8 @@ export const generateFullReading = async (
             jsonStr = response.text || "{}";
         }
         
-        const parsed = JSON.parse(cleanJsonString(jsonStr));
+        const cleaned = cleanJsonString(jsonStr);
+        const parsed = JSON.parse(cleaned);
         return {
             interpretation: sanitizeString(parsed.interpretation),
             cardMeanings: Array.isArray(parsed.cardMeanings) ? parsed.cardMeanings.map(sanitizeString) : []
@@ -339,7 +425,8 @@ export const generateDailyReading = async (
             });
              jsonStr = response.text || "{}";
         }
-        const parsed = JSON.parse(cleanJsonString(jsonStr));
+        const cleaned = cleanJsonString(jsonStr);
+        const parsed = JSON.parse(cleaned);
         
         const finalCards = drawnCards.map((c, i) => ({
             ...c,
@@ -352,6 +439,7 @@ export const generateDailyReading = async (
         };
 
     } catch (e) {
+        console.error("Daily reading error", e);
         return {
             guidance: "Trust your intuition today.",
             cards: drawnCards.map(c => ({ ...c, meaning: "..." }))
@@ -391,7 +479,8 @@ export const generateDailyPractice = async (context: string): Promise<DailyPract
             });
             jsonStr = response.text || "{}";
         }
-        const parsed = JSON.parse(cleanJsonString(jsonStr));
+        const cleaned = cleanJsonString(jsonStr);
+        const parsed = JSON.parse(cleaned);
         return {
             energyStatus: sanitizeString(parsed.energyStatus),
             todaysAffirmation: sanitizeString(parsed.todaysAffirmation),
@@ -438,7 +527,8 @@ export const analyzeJournalEntry = async (content: string): Promise<JournalEntry
             jsonStr = response.text || "{}";
         }
         
-        const parsed = JSON.parse(cleanJsonString(jsonStr));
+        const cleaned = cleanJsonString(jsonStr);
+        const parsed = JSON.parse(cleaned);
         return {
             emotionalState: parsed.emotionalState || [],
             blocksIdentified: parsed.blocksIdentified || [],
