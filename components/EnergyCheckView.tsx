@@ -58,7 +58,7 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
   const [loading, setLoading] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [deck, setDeck] = useState(generateTarotDeck());
+  const [deck, setDeck] = useState(() => generateTarotDeck());
   const [isShuffling, setIsShuffling] = useState(false);
   const [hasShuffled, setHasShuffled] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);

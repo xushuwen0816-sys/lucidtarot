@@ -272,7 +272,7 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
   const [recommendedSpreadIds, setRecommendedSpreadIds] = useState<string[]>([]);
   const [showAllSpreads, setShowAllSpreads] = useState(false);
   
-  const [deck, setDeck] = useState(generateTarotDeck());
+  const [deck, setDeck] = useState(() => generateTarotDeck());
   const [isShuffling, setIsShuffling] = useState(false);
   const [hasShuffled, setHasShuffled] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
