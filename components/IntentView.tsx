@@ -494,7 +494,18 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete, onSessionUpdate }
   };
   
   useEffect(() => {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      // Intelligent auto-scroll:
+      // Only scroll to bottom if:
+      // 1. We are currently loading (isChatting is true)
+      // 2. OR The last message was sent by the USER.
+      // If the AI just finished a message (isChatting false, last msg model),
+      // we do NOT auto-scroll to bottom, allowing user to read from the top of the new answer.
+      const lastMessage = session?.chatHistory[session.chatHistory.length - 1];
+      const shouldScroll = isChatting || (lastMessage?.role === 'user');
+
+      if (shouldScroll) {
+          chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
   }, [session?.chatHistory, isChatting]);
 
 

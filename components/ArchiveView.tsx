@@ -25,9 +25,14 @@ const HistoryView: React.FC<HistoryViewProps> = ({ sessions, onSessionUpdate }) 
   );
 
   useEffect(() => {
-      if (selectedSession && chatEndRef.current) {
-         chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
+    // Intelligent Auto-scroll for Archive View:
+    // Only scroll if loading (thinking) OR if the user just sent a message.
+    // Do NOT scroll if the AI response just arrived.
+    const lastMsg = selectedSession?.chatHistory[selectedSession.chatHistory.length - 1];
+    
+    if (selectedSession && chatEndRef.current && (isChatting || lastMsg?.role === 'user')) {
+       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [selectedSession?.chatHistory, isChatting, selectedSession]);
 
   const handleChatSubmit = async () => {

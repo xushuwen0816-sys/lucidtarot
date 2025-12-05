@@ -284,6 +284,18 @@ export const generateFullReading = async (
     cards: TarotCard[]
 ): Promise<{ interpretation: string; cardMeanings: string[] }> => {
     
+    // Logic for spread-specific instructions
+    let specialSpreadInstructions = "";
+    if (spread.id === 'three_card_freestyle') {
+        specialSpreadInstructions = `
+        **SPECIAL LAYOUT RULES FOR 'three_card_freestyle'**:
+        - This is a "Center + Wings" structure, NOT a timeline.
+        - **Card 2 (Middle)** is the CORE/MAIN answer/theme. Focus heavily on this card.
+        - **Card 1 (Left) and Card 3 (Right)** are AUXILIARY. They modify, support, or add detail to the core meaning of Card 2.
+        - Do NOT interpret this spread as "Past, Present, Future". Interpret it as "Central Energy (2) flanked by Influences (1 & 3)".
+        `;
+    }
+
     const cardsDesc = cards.map((c, i) => {
         const pos = spread.positions[i];
         return `Position ${i+1} (${pos.name} - ${pos.description}): Card [${c.name}], ${c.isReversed ? 'Reversed' : 'Upright'}`;
@@ -297,6 +309,20 @@ export const generateFullReading = async (
         
         Cards Drawn:
         ${cardsDesc}
+
+        **CRITICAL INTERPRETATION RULES**:
+        1. **Subject Analysis**: 
+           - If the user asks about **themselves** ("I", "me", "my"), the cards primarily reflect the **user's** internal state, subconscious, or actions.
+           - If the user asks about **someone else** ("he", "she", "they", "specific person"), the cards likely reflect **that person's** thoughts, feelings, or situation (unless the position specifically says "Querent").
+        
+        2. **Gender & Archetypes**:
+           - Pay close attention to Court Cards (King, Queen, Knight, Page) and Major Arcana archetypes (Emperor, Empress).
+           - **Kings/Knights/Emperor**: Often represent Masculine energy, Men, Father figures, or Bosses.
+           - **Queens/Empress/High Priestess**: Often represent Feminine energy, Women, or Mother figures.
+           - **Pages**: Often represent Young people, Students, Children, or immature energy regardless of gender.
+           - Use these archetypes to identify *who* the card is talking about in the context of the question (e.g., in a love reading, a King often represents the male partner).
+
+        ${specialSpreadInstructions}
 
         Please provide a deep, healing, and empowering interpretation.
         
