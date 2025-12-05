@@ -234,7 +234,7 @@ const EnergyCheckView: React.FC<EnergyCheckViewProps> = ({ onSaveDaily }) => {
                                 <span className="text-sm tracking-[0.2em] text-white uppercase block">Shuffle</span>
                             </div>
                         </div>
-                        <p className="mt-6 text-stone-400 font-serif animate-pulse">点击洗牌，注入今日意图...</p>
+                        <p className="mt-6 text-stone-400 font-serif animate-pulse">点击洗牌，注入今日能量...</p>
                     </div>
                 </div>
             )}

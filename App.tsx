@@ -89,6 +89,13 @@ const App: React.FC = () => {
       setSessions(updated);
       localStorage.setItem('lucid_tarot_sessions', JSON.stringify(updated));
   };
+  
+  // New handler to update an existing session (e.g. adding chat history)
+  const handleSessionUpdate = (updatedSession: TarotReadingSession) => {
+      const updated = sessions.map(s => s.id === updatedSession.id ? updatedSession : s);
+      setSessions(updated);
+      localStorage.setItem('lucid_tarot_sessions', JSON.stringify(updated));
+  };
 
   useEffect(() => {
       if (hasApiKey()) setIsAuthorized(true);
@@ -296,11 +303,17 @@ const App: React.FC = () => {
               )}
               
               {currentView === AppView.READING && (
-                <ReadingView onComplete={handleReadingComplete} />
+                <ReadingView 
+                    onComplete={handleReadingComplete} 
+                    onSessionUpdate={handleSessionUpdate}
+                />
               )}
               
               {currentView === AppView.HISTORY && (
-                <HistoryView sessions={sessions} />
+                <HistoryView 
+                    sessions={sessions} 
+                    onSessionUpdate={handleSessionUpdate}
+                />
               )}
 
            </div>

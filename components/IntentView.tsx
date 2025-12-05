@@ -263,9 +263,10 @@ const SPREADS: Spread[] = [
 
 interface ReadingViewProps {
   onComplete: (session: TarotReadingSession) => void;
+  onSessionUpdate?: (session: TarotReadingSession) => void;
 }
 
-const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
+const ReadingView: React.FC<ReadingViewProps> = ({ onComplete, onSessionUpdate }) => {
   const [step, setStep] = useState<'question' | 'spread' | 'draw' | 'reading'>('question');
   const [question, setQuestion] = useState('');
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
@@ -462,7 +463,9 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
 
   const handleFeedback = (type: FeedbackType) => {
       if (!session) return;
-      setSession({ ...session, feedback: type });
+      const updatedSession = { ...session, feedback: type };
+      setSession(updatedSession);
+      if (onSessionUpdate) onSessionUpdate(updatedSession);
   };
 
   const handleChatSubmit = async () => {
@@ -470,14 +473,23 @@ const ReadingView: React.FC<ReadingViewProps> = ({ onComplete }) => {
       
       const userMsg: ChatMessage = { role: 'user', text: chatInput };
       const updatedHistory = [...session.chatHistory, userMsg];
-      setSession({ ...session, chatHistory: updatedHistory });
+      
+      const sessionWithUser = { ...session, chatHistory: updatedHistory };
+      setSession(sessionWithUser);
+      if (onSessionUpdate) onSessionUpdate(sessionWithUser);
+
       setChatInput('');
       setIsChatting(true);
 
       const aiResponse = await chatWithTarot(updatedHistory, session.interpretation);
       const modelMsg: ChatMessage = { role: 'model', text: aiResponse };
       
-      setSession(prev => prev ? ({ ...prev, chatHistory: [...updatedHistory, modelMsg] }) : null);
+      setSession(prev => {
+          if (!prev) return null;
+          const finalSession = { ...prev, chatHistory: [...updatedHistory, modelMsg] };
+          if (onSessionUpdate) onSessionUpdate(finalSession);
+          return finalSession;
+      });
       setIsChatting(false);
   };
   

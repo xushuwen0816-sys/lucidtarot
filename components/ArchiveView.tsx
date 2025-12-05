@@ -1,21 +1,65 @@
 
-import React, { useState } from 'react';
-import { TarotReadingSession } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { TarotReadingSession, ChatMessage } from '../types';
 import { SectionTitle, Card, Modal, SimpleMarkdown, TarotCardImage } from './Shared';
-import { Calendar, Search, ChevronRight, MessageSquare } from 'lucide-react';
+import { Calendar, Search, ChevronRight, MessageSquare, Send, Sparkles } from 'lucide-react';
+import { chatWithTarot } from '../services/geminiService';
 
 interface HistoryViewProps {
   sessions: TarotReadingSession[];
+  onSessionUpdate: (session: TarotReadingSession) => void;
 }
 
-const HistoryView: React.FC<HistoryViewProps> = ({ sessions }) => {
+const HistoryView: React.FC<HistoryViewProps> = ({ sessions, onSessionUpdate }) => {
   const [selectedSession, setSelectedSession] = useState<TarotReadingSession | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Chat state for the active modal
+  const [chatInput, setChatInput] = useState('');
+  const [isChatting, setIsChatting] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const filteredSessions = sessions.filter(s => 
       s.question.toLowerCase().includes(searchTerm.toLowerCase()) || 
       s.interpretation.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+      if (selectedSession && chatEndRef.current) {
+         chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+  }, [selectedSession?.chatHistory, isChatting, selectedSession]);
+
+  const handleChatSubmit = async () => {
+      if (!chatInput.trim() || !selectedSession) return;
+      
+      const userMsg: ChatMessage = { role: 'user', text: chatInput };
+      const updatedHistory = [...selectedSession.chatHistory, userMsg];
+      
+      // Update local and global state immediately for user message
+      const updatedSessionUser = { ...selectedSession, chatHistory: updatedHistory };
+      setSelectedSession(updatedSessionUser);
+      onSessionUpdate(updatedSessionUser);
+
+      setChatInput('');
+      setIsChatting(true);
+
+      try {
+          // API Call
+          const response = await chatWithTarot(updatedHistory, selectedSession.interpretation);
+          const modelMsg: ChatMessage = { role: 'model', text: response };
+          const finalHistory = [...updatedHistory, modelMsg];
+          
+          // Update local and global state with AI response
+          const updatedSessionModel = { ...selectedSession, chatHistory: finalHistory };
+          setSelectedSession(updatedSessionModel);
+          onSessionUpdate(updatedSessionModel);
+      } catch (error) {
+          console.error("Chat error", error);
+      } finally {
+          setIsChatting(false);
+      }
+  };
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -122,22 +166,57 @@ const HistoryView: React.FC<HistoryViewProps> = ({ sessions }) => {
                       <SimpleMarkdown content={selectedSession.interpretation} />
                   </div>
 
-                  {/* Chat History */}
-                  {selectedSession.chatHistory.length > 0 && (
-                      <div className="mt-6 pt-6 border-t border-white/10">
-                          <h4 className="text-sm text-stone-400 font-bold mb-4 flex items-center gap-2">
-                              <MessageSquare className="w-4 h-4" /> 追问记录
-                          </h4>
-                          <div className="space-y-3">
+                  {/* Chat Section */}
+                  <div className="mt-6 pt-6 border-t border-white/10">
+                      <h4 className="text-sm text-white font-bold mb-4 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-lucid-glow" /> 追问 LUCID
+                      </h4>
+                      
+                      {/* Chat History Container */}
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 mb-4">
+                          <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 mb-4">
                               {selectedSession.chatHistory.map((msg, i) => (
-                                  <div key={i} className={`text-xs p-2 rounded-lg ${msg.role === 'user' ? 'bg-white/10 ml-8' : 'bg-black/20 mr-8 text-stone-400'}`}>
-                                      <span className="opacity-50 block text-[9px] uppercase mb-1">{msg.role}</span>
-                                      {msg.text}
-                                  </div>
+                                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                       <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
+                                           msg.role === 'user' 
+                                           ? 'bg-lucid-glow/10 text-white rounded-tr-sm border border-lucid-glow/10' 
+                                           : 'bg-black/30 text-stone-300 rounded-tl-sm border border-white/5'
+                                       }`}>
+                                           <SimpleMarkdown content={msg.text} />
+                                       </div>
+                                   </div>
                               ))}
+                              {isChatting && (
+                                   <div className="flex justify-start">
+                                        <div className="bg-black/30 rounded-2xl p-4 rounded-tl-sm border border-white/5 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-stone-500 rounded-full animate-bounce"></div>
+                                            <div className="w-1.5 h-1.5 bg-stone-500 rounded-full animate-bounce delay-75"></div>
+                                            <div className="w-1.5 h-1.5 bg-stone-500 rounded-full animate-bounce delay-150"></div>
+                                        </div>
+                                   </div>
+                              )}
+                              <div ref={chatEndRef}></div>
                           </div>
+                          
+                          {/* Chat Input */}
+                          <div className="relative">
+                               <input 
+                                   value={chatInput}
+                                   onChange={(e) => setChatInput(e.target.value)}
+                                   onKeyDown={(e) => e.key === 'Enter' && handleChatSubmit()}
+                                   placeholder="继续追问..."
+                                   className="w-full bg-black/40 border border-white/10 rounded-full py-3 pl-6 pr-14 text-sm text-white focus:outline-none focus:border-lucid-glow/30 transition-all font-serif"
+                               />
+                               <button 
+                                   onClick={handleChatSubmit}
+                                   disabled={!chatInput.trim() || isChatting}
+                                   className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-lucid-glow/20 hover:bg-lucid-glow text-lucid-glow hover:text-black rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                               >
+                                   <Send className="w-4 h-4" />
+                               </button>
+                           </div>
                       </div>
-                  )}
+                  </div>
               </div>
           )}
       </Modal>
